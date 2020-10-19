@@ -1,14 +1,10 @@
-import { includes, isFinite, isNumber } from 'lodash';
-import React from 'react';
-import { Section, InputNumber, Switch } from '@/components/visualizations/editor';
-import { EditorPropTypes } from '@/visualizations';
+import { includes } from "lodash";
+import React from "react";
+import { Section, InputNumber, Switch } from "@/components/visualizations/editor";
+import { EditorPropTypes } from "@/visualizations";
+import { cleanNumber } from "../plotly/utils";
 
 import AxisSettings from "./AxisSettings";
-
-function toNumber(value) {
-  value = isNumber(value) ? value : parseFloat(value);
-  return isFinite(value) ? value : null;
-}
 
 export default function XAxisSettings({ options, onOptionsChange }) {
   return (
@@ -20,7 +16,7 @@ export default function XAxisSettings({ options, onOptionsChange }) {
         onChange={xAxis => onOptionsChange({ xAxis })}
       />
 
-      {includes(['histogram'], options.globalSeriesType) && (
+      {includes(["histogram"], options.globalSeriesType) && (
         <React.Fragment>
           <Section>
             <InputNumber
@@ -29,7 +25,7 @@ export default function XAxisSettings({ options, onOptionsChange }) {
               placeholder="Auto"
               data-test="Chart.XAxis.BinSize"
               defaultValue={options.binSize}
-              onChange={binSize => onOptionsChange({ binSize: toNumber(binSize) })}
+              onChange={binSize => onOptionsChange({ binSize: cleanNumber(binSize) })}
             />
           </Section>
 
@@ -40,7 +36,7 @@ export default function XAxisSettings({ options, onOptionsChange }) {
               placeholder="Auto"
               data-test="Chart.XAxis.BinStart"
               defaultValue={options.binStart}
-              onChange={binStart => onOptionsChange({ binStart: toNumber(binStart) })}
+              onChange={binStart => onOptionsChange({ binStart: cleanNumber(binStart) })}
             />
           </Section>
         </React.Fragment>
