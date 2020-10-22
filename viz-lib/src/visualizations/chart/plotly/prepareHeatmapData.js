@@ -22,6 +22,8 @@ function prepareSeries(series, options, additionalOptions) {
     type: "heatmap",
     name: "",
     colorscale: colorScheme,
+    xgap: options.heatmapSpacing,
+    ygap: options.heatmapSpacing,
   };
 
   plotlySeries.x = uniq(map(series.data, v => v.x));

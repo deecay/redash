@@ -290,6 +290,17 @@ export default function GeneralSettings({ options, data, onOptionsChange }) {
           </Select>
         </Section>
       )}
+
+      {includes(["heatmap"], options.globalSeriesType) && (
+        <Section>
+          <InputNumber
+            label="Brick Spacing"
+            data-test="Chart.HeatmapSpacing"
+            defaultValue={options.heatmapSpacing}
+            onChange={value => onOptionsChange({ heatmapSpacing: toNumber(value) })}
+          />
+        </Section>
+      )}
     </React.Fragment>
   );
 }
