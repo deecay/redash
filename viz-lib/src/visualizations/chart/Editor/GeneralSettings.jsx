@@ -3,6 +3,8 @@ import React, { useMemo } from "react";
 import { Section, Select, Checkbox, InputNumber } from "@/components/visualizations/editor";
 import { UpdateOptionsStrategy } from "@/components/visualizations/editor/createTabbedEditor";
 import { EditorPropTypes } from "@/visualizations/prop-types";
+import * as Grid from "antd/lib/grid";
+import { cleanNumber } from "../plotly/utils";
 
 import ChartTypeSelect from "./ChartTypeSelect";
 import ColumnMappingSelect from "./ColumnMappingSelect";
@@ -292,14 +294,38 @@ export default function GeneralSettings({ options, data, onOptionsChange }) {
       )}
 
       {includes(["heatmap"], options.globalSeriesType) && (
-        <Section>
-          <InputNumber
-            label="Brick Spacing"
-            data-test="Chart.HeatmapSpacing"
-            defaultValue={options.heatmapSpacing}
-            onChange={value => onOptionsChange({ heatmapSpacing: toNumber(value) })}
-          />
-        </Section>
+        <React.Fragment>
+          <Section>
+            <InputNumber
+              label="Brick Spacing"
+              data-test="Chart.HeatmapSpacing"
+              defaultValue={options.heatmapSpacing}
+              onChange={value => onOptionsChange({ heatmapSpacing: toNumber(value) })}
+            />
+          </Section>
+          <Section>
+            <Grid.Row gutter={15} type="flex" align="middle">
+              <Grid.Col span={12}>
+                <InputNumber
+                  label="zMin Value"
+                  placeholder="Auto"
+                  data-test="Chart.RangeZMin"
+                  defaultValue={cleanNumber(options.rangeZMin)}
+                  onChange={value => onOptionsChange({ rangeZMin: toNumber(value) })}
+                />
+              </Grid.Col>
+              <Grid.Col span={12}>
+                <InputNumber
+                  label="zMax Value"
+                  placeholder="Auto"
+                  data-test="Chart.RangeZMax"
+                  defaultValue={cleanNumber(options.rangeZMax)}
+                  onChange={value => onOptionsChange({ rangeZMax: toNumber(value) })}
+                />
+              </Grid.Col>
+            </Grid.Row>
+          </Section>
+        </React.Fragment>
       )}
     </React.Fragment>
   );

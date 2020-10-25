@@ -24,6 +24,8 @@ function prepareSeries(series, options, additionalOptions) {
     colorscale: colorScheme,
     xgap: options.heatmapSpacing,
     ygap: options.heatmapSpacing,
+    zmin: options.rangeZMin,
+    zmax: options.rangeZMax,
   };
 
   plotlySeries.x = uniq(map(series.data, v => v.x));
