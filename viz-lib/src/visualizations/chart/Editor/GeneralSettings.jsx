@@ -251,7 +251,7 @@ export default function GeneralSettings({ options, data, onOptionsChange }) {
             label="Stacking"
             data-test="Chart.Stacking"
             defaultValue={options.series.stacking}
-            disabled={!includes(["line", "area", "column"], options.globalSeriesType)}
+            disabled={!includes(["line", "area", "column", "histogram"], options.globalSeriesType)}
             onChange={stacking => onOptionsChange({ series: { stacking } })}>
             <Select.Option value={null} data-test="Chart.Stacking.Disabled">
               Disabled
