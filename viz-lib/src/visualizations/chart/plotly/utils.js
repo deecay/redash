@@ -1,9 +1,14 @@
-import { isUndefined } from "lodash";
+import { isUndefined, isNumber, isFinite } from "lodash";
 import moment from "moment";
 import plotlyCleanNumber from "plotly.js/src/lib/clean_number";
 
 export function cleanNumber(value) {
   return isUndefined(value) ? value : plotlyCleanNumber(value);
+}
+
+export function toNumber(value) {
+  value = isNumber(value) ? value : parseFloat(value);
+  return isFinite(value) ? value : null;
 }
 
 export function getSeriesAxis(series, options) {

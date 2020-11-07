@@ -1,14 +1,10 @@
-import { isString, isObject, isFinite, isNumber, merge } from "lodash";
+import { isString, isObject, merge } from "lodash";
 import React from "react";
 import PropTypes from "prop-types";
 import { useDebouncedCallback } from "use-debounce";
 import * as Grid from "antd/lib/grid";
 import { Section, Select, Input, InputNumber } from "@/components/visualizations/editor";
-
-function toNumber(value) {
-  value = isNumber(value) ? value : parseFloat(value);
-  return isFinite(value) ? value : null;
-}
+import { toNumber } from "../plotly/utils";
 
 export default function AxisSettings({ id, options, features, onChange }) {
   function optionsChanged(newOptions) {

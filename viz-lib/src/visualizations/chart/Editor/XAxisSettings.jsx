@@ -2,7 +2,7 @@ import { includes } from "lodash";
 import React from "react";
 import { Section, InputNumber, Switch } from "@/components/visualizations/editor";
 import { EditorPropTypes } from "@/visualizations";
-import { cleanNumber } from "../plotly/utils";
+import { toNumber } from "../plotly/utils";
 
 import AxisSettings from "./AxisSettings";
 
@@ -25,7 +25,7 @@ export default function XAxisSettings({ options, onOptionsChange }) {
               placeholder="Auto"
               data-test="Chart.XAxis.BinSize"
               defaultValue={options.binSize}
-              onChange={binSize => onOptionsChange({ binSize: cleanNumber(binSize) })}
+              onChange={binSize => onOptionsChange({ binSize: toNumber(binSize) })}
             />
           </Section>
 
@@ -36,7 +36,7 @@ export default function XAxisSettings({ options, onOptionsChange }) {
               placeholder="Auto"
               data-test="Chart.XAxis.BinStart"
               defaultValue={options.binStart}
-              onChange={binStart => onOptionsChange({ binStart: cleanNumber(binStart) })}
+              onChange={binStart => onOptionsChange({ binStart: toNumber(binStart) })}
             />
           </Section>
         </React.Fragment>
