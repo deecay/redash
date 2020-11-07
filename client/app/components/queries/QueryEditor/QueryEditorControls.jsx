@@ -1,12 +1,37 @@
-import { map } from "lodash";
-import React from "react";
+import { isFunction, map, filter, fromPairs, noop } from "lodash";
+import React, { useEffect } from "react";
 import PropTypes from "prop-types";
 import Tooltip from "antd/lib/tooltip";
 import Button from "antd/lib/button";
 import Select from "antd/lib/select";
+import KeyboardShortcuts, { humanReadableShortcut } from "@/services/KeyboardShortcuts";
 
 import AutocompleteToggle from "./AutocompleteToggle";
 import "./QueryEditorControls.less";
+import AutoLimitCheckbox from "@/components/queries/QueryEditor/AutoLimitCheckbox";
+
+export function ButtonTooltip({ title, shortcut, ...props }) {
+  shortcut = humanReadableShortcut(shortcut, 1); // show only primary shortcut
+  title =
+    title && shortcut ? (
+      <React.Fragment>
+        {title} (<i>{shortcut}</i>)
+      </React.Fragment>
+    ) : (
+      title || shortcut
+    );
+  return <Tooltip placement="top" title={title} {...props} />;
+}
+
+ButtonTooltip.propTypes = {
+  title: PropTypes.node,
+  shortcut: PropTypes.string,
+};
+
+ButtonTooltip.defaultProps = {
+  title: null,
+  shortcut: null,
+};
 
 export default function EditorControl({
   addParameterButtonProps,
@@ -14,22 +39,37 @@ export default function EditorControl({
   saveButtonProps,
   executeButtonProps,
   autocompleteToggleProps,
+  autoLimitCheckboxProps,
   dataSourceSelectorProps,
 }) {
+  useEffect(() => {
+    const buttons = filter(
+      [addParameterButtonProps, formatButtonProps, saveButtonProps, executeButtonProps],
+      b => b.shortcut && isFunction(b.onClick)
+    );
+    if (buttons.length > 0) {
+      const shortcuts = fromPairs(map(buttons, b => [b.shortcut, b.disabled ? noop : b.onClick]));
+      KeyboardShortcuts.bind(shortcuts);
+      return () => {
+        KeyboardShortcuts.unbind(shortcuts);
+      };
+    }
+  }, [addParameterButtonProps, formatButtonProps, saveButtonProps, executeButtonProps]);
+
   return (
     <div className="query-editor-controls">
       {addParameterButtonProps !== false && (
-        <Tooltip placement="top" title={addParameterButtonProps.title}>
+        <ButtonTooltip title={addParameterButtonProps.title} shortcut={addParameterButtonProps.shortcut}>
           <Button
             className="query-editor-controls-button m-r-5"
             disabled={addParameterButtonProps.disabled}
             onClick={addParameterButtonProps.onClick}>
             {"{{"}&nbsp;{"}}"}
           </Button>
-        </Tooltip>
+        </ButtonTooltip>
       )}
       {formatButtonProps !== false && (
-        <Tooltip placement="top" title={formatButtonProps.title}>
+        <ButtonTooltip title={formatButtonProps.title} shortcut={formatButtonProps.shortcut}>
           <Button
             className="query-editor-controls-button m-r-5"
             disabled={formatButtonProps.disabled}
@@ -37,7 +77,7 @@ export default function EditorControl({
             <span className="zmdi zmdi-format-indent-increase" />
             {formatButtonProps.text}
           </Button>
-        </Tooltip>
+        </ButtonTooltip>
       )}
       {autocompleteToggleProps !== false && (
         <AutocompleteToggle
@@ -46,7 +86,8 @@ export default function EditorControl({
           onToggle={autocompleteToggleProps.onToggle}
         />
       )}
-      {dataSourceSelectorProps === false && <span className="flex-fill" />}
+      {autoLimitCheckboxProps !== false && <AutoLimitCheckbox {...autoLimitCheckboxProps} />}
+      {dataSourceSelectorProps === false && <span className="query-editor-controls-spacer" />}
       {dataSourceSelectorProps !== false && (
         <Select
           className="w-100 flex-fill datasource-small"
@@ -61,19 +102,20 @@ export default function EditorControl({
         </Select>
       )}
       {saveButtonProps !== false && (
-        <Tooltip placement="top" title={saveButtonProps.title}>
+        <ButtonTooltip title={saveButtonProps.title} shortcut={saveButtonProps.shortcut}>
           <Button
             className="query-editor-controls-button m-l-5"
             disabled={saveButtonProps.disabled}
+            loading={saveButtonProps.loading}
             onClick={saveButtonProps.onClick}
             data-test="SaveButton">
-            <span className="fa fa-floppy-o" />
+            {!saveButtonProps.loading && <span className="fa fa-floppy-o" />}
             {saveButtonProps.text}
           </Button>
-        </Tooltip>
+        </ButtonTooltip>
       )}
       {executeButtonProps !== false && (
-        <Tooltip placement="top" title={executeButtonProps.title}>
+        <ButtonTooltip title={executeButtonProps.title} shortcut={executeButtonProps.shortcut}>
           <Button
             className="query-editor-controls-button m-l-5"
             type="primary"
@@ -83,7 +125,7 @@ export default function EditorControl({
             <span className="zmdi zmdi-play" />
             {executeButtonProps.text}
           </Button>
-        </Tooltip>
+        </ButtonTooltip>
       )}
     </div>
   );
@@ -94,8 +136,10 @@ const ButtonPropsPropType = PropTypes.oneOfType([
   PropTypes.shape({
     title: PropTypes.node,
     disabled: PropTypes.bool,
+    loading: PropTypes.bool,
     onClick: PropTypes.func,
     text: PropTypes.node,
+    shortcut: PropTypes.string,
   }),
 ]);
 
@@ -111,6 +155,10 @@ EditorControl.propTypes = {
       enabled: PropTypes.bool,
       onToggle: PropTypes.func,
     }),
+  ]),
+  autoLimitCheckboxProps: PropTypes.oneOfType([
+    PropTypes.bool, // `false` to hide
+    PropTypes.shape(AutoLimitCheckbox.propTypes),
   ]),
   dataSourceSelectorProps: PropTypes.oneOfType([
     PropTypes.bool, // `false` to hide
@@ -134,5 +182,6 @@ EditorControl.defaultProps = {
   saveButtonProps: false,
   executeButtonProps: false,
   autocompleteToggleProps: false,
+  autoLimitCheckboxProps: false,
   dataSourceSelectorProps: false,
 };

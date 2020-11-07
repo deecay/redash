@@ -1,17 +1,21 @@
-import React from "react";
 import { isEmpty } from "lodash";
+import React from "react";
 import PropTypes from "prop-types";
-import { react2angular } from "react2angular";
+
+import routeWithApiKeySession from "@/components/ApplicationArea/routeWithApiKeySession";
+import Link from "@/components/Link";
 import BigMessage from "@/components/BigMessage";
-import { PageHeader } from "@/components/PageHeader";
-import { Parameters } from "@/components/Parameters";
+import PageHeader from "@/components/PageHeader";
+import Parameters from "@/components/Parameters";
 import DashboardGrid from "@/components/dashboards/DashboardGrid";
 import Filters from "@/components/Filters";
+
 import { Dashboard } from "@/services/dashboard";
-import { $route as ngRoute } from "@/services/ng";
-import PromiseRejectionError from "@/lib/promise-rejection-error";
+import routes from "@/services/routes";
+
 import logoUrl from "@/assets/images/redash_icon_small.png";
-import useDashboard from "./useDashboard";
+
+import useDashboard from "./hooks/useDashboard";
 
 import "./PublicDashboardPage.less";
 
@@ -53,17 +57,24 @@ PublicDashboard.propTypes = {
 };
 
 class PublicDashboardPage extends React.Component {
+  static propTypes = {
+    token: PropTypes.string.isRequired,
+    onError: PropTypes.func,
+  };
+
+  static defaultProps = {
+    onError: () => {},
+  };
+
   state = {
     loading: true,
     dashboard: null,
   };
 
   componentDidMount() {
-    Dashboard.getByToken({ token: ngRoute.current.params.token })
-      .$promise.then(dashboard => this.setState({ dashboard, loading: false }))
-      .catch(error => {
-        throw new PromiseRejectionError(error);
-      });
+    Dashboard.getByToken({ token: this.props.token })
+      .then(dashboard => this.setState({ dashboard, loading: false }))
+      .catch(error => this.props.onError(error));
   }
 
   render() {
@@ -79,37 +90,22 @@ class PublicDashboardPage extends React.Component {
         )}
         <div id="footer">
           <div className="text-center">
-            <a href="https://redash.io">
+            <Link href="https://redash.io">
               <img alt="Redash Logo" src={logoUrl} width="38" />
-            </a>
+            </Link>
           </div>
-          Powered by <a href="https://redash.io/?ref=public-dashboard">Redash</a>
+          Powered by <Link href="https://redash.io/?ref=public-dashboard">Redash</Link>
         </div>
       </div>
     );
   }
 }
 
-export default function init(ngModule) {
-  ngModule.component("publicDashboardPage", react2angular(PublicDashboardPage));
-
-  function session($route, Auth) {
-    const token = $route.current.params.token;
-    Auth.setApiKey(token);
-    return Auth.loadConfig();
-  }
-
-  ngModule.config($routeProvider => {
-    $routeProvider.when("/public/dashboards/:token", {
-      template: "<public-dashboard-page></public-dashboard-page>",
-      reloadOnSearch: false,
-      resolve: {
-        session,
-      },
-    });
-  });
-
-  return [];
-}
-
-init.init = true;
+routes.register(
+  "Dashboards.ViewShared",
+  routeWithApiKeySession({
+    path: "/public/dashboards/:token",
+    render: pageProps => <PublicDashboardPage {...pageProps} />,
+    getApiKey: currentRoute => currentRoute.routeParams.token,
+  })
+);

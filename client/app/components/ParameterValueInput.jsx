@@ -1,3 +1,4 @@
+import { isEqual, isEmpty } from "lodash";
 import React from "react";
 import PropTypes from "prop-types";
 import Select from "antd/lib/select";
@@ -5,8 +6,7 @@ import Input from "antd/lib/input";
 import InputNumber from "antd/lib/input-number";
 import DateParameter from "@/components/dynamic-parameters/DateParameter";
 import DateRangeParameter from "@/components/dynamic-parameters/DateRangeParameter";
-import { isEqual } from "lodash";
-import { QueryBasedParameterInput } from "./QueryBasedParameterInput";
+import QueryBasedParameterInput from "./QueryBasedParameterInput";
 
 import "./ParameterValueInput.less";
 
@@ -103,14 +103,13 @@ class ParameterValueInput extends React.Component {
         className={this.props.className}
         mode={parameter.multiValuesOptions ? "multiple" : "default"}
         optionFilterProp="children"
-        disabled={enumOptionsArray.length === 0}
         value={normalize(value)}
         onChange={this.onSelect}
         dropdownMatchSelectWidth={false}
         showSearch
         showArrow
         style={{ minWidth: 60 }}
-        notFoundContent={null}
+        notFoundContent={isEmpty(enumOptionsArray) ? "No options available" : null}
         {...multipleValuesProps}>
         {enumOptionsArray.map(option => (
           <Option key={option} value={option}>

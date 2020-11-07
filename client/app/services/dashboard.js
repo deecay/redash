@@ -1,8 +1,12 @@
 import _ from "lodash";
+import { axios } from "@/services/axios";
 import dashboardGridOptions from "@/config/dashboard-grid-options";
-import { Widget } from "./widget";
+import Widget from "./widget";
+import { currentUser } from "@/services/auth";
+import location from "@/services/location";
+import { cloneParameter } from "@/services/parameters";
 
-export let Dashboard = null; // eslint-disable-line import/no-mutable-exports
+export const urlForDashboard = ({ id, slug }) => `dashboards/${id}-${slug}`;
 
 export function collectDashboardFilters(dashboard, queryResults, urlParams) {
   const filters = {};
@@ -119,148 +123,137 @@ function calculateNewWidgetPosition(existingWidgets, newWidget) {
     .value();
 }
 
-function DashboardService($resource, $http, $location, currentUser) {
-  function prepareDashboardWidgets(widgets) {
-    return prepareWidgetsForDashboard(_.map(widgets, widget => new Widget(widget)));
-  }
-
-  function transformSingle(dashboard) {
-    if (dashboard.widgets) {
-      dashboard.widgets = prepareDashboardWidgets(dashboard.widgets);
-    }
-    dashboard.publicAccessEnabled = dashboard.public_url !== undefined;
-  }
-
-  const transform = $http.defaults.transformResponse.concat(data => {
-    if (data.results) {
-      data.results.forEach(transformSingle);
-    } else {
-      transformSingle(data);
-    }
-    return data;
+export function Dashboard(dashboard) {
+  _.extend(this, dashboard);
+  Object.defineProperty(this, "url", {
+    get: function() {
+      return urlForDashboard(this);
+    },
   });
+}
 
-  const resource = $resource(
-    "api/dashboards/:slug",
-    { slug: "@slug" },
-    {
-      get: { method: "GET", transformResponse: transform },
-      getByToken: {
-        method: "GET",
-        url: "api/dashboards/public/:token",
-        transformResponse: transform,
-      },
-      save: { method: "POST", transformResponse: transform },
-      query: { method: "GET", isArray: false, transformResponse: transform },
-      recent: {
-        method: "get",
-        isArray: true,
-        url: "api/dashboards/recent",
-        transformResponse: transform,
-      },
-      favorites: {
-        method: "get",
-        isArray: false,
-        url: "api/dashboards/favorites",
-      },
-      favorite: {
-        method: "post",
-        isArray: false,
-        url: "api/dashboards/:slug/favorite",
-        transformRequest: [() => ""], // body not needed
-      },
-      unfavorite: {
-        method: "delete",
-        isArray: false,
-        url: "api/dashboards/:slug/favorite",
-        transformRequest: [() => ""], // body not needed
-      },
+function prepareDashboardWidgets(widgets) {
+  return prepareWidgetsForDashboard(_.map(widgets, widget => new Widget(widget)));
+}
+
+function transformSingle(dashboard) {
+  dashboard = new Dashboard(dashboard);
+  if (dashboard.widgets) {
+    dashboard.widgets = prepareDashboardWidgets(dashboard.widgets);
+  }
+  dashboard.publicAccessEnabled = dashboard.public_url !== undefined;
+  return dashboard;
+}
+
+function transformResponse(data) {
+  if (data.results) {
+    data = { ...data, results: _.map(data.results, transformSingle) };
+  } else {
+    data = transformSingle(data);
+  }
+  return data;
+}
+
+const saveOrCreateUrl = data => (data.id ? `api/dashboards/${data.id}` : "api/dashboards");
+const DashboardService = {
+  get: ({ id, slug }) => {
+    const params = {};
+    if (!id) {
+      params.legacy = null;
     }
-  );
+    return axios.get(`api/dashboards/${id || slug}`, { params }).then(transformResponse);
+  },
+  getByToken: ({ token }) => axios.get(`api/dashboards/public/${token}`).then(transformResponse),
+  save: data => axios.post(saveOrCreateUrl(data), data).then(transformResponse),
+  delete: ({ id }) => axios.delete(`api/dashboards/${id}`).then(transformResponse),
+  query: params => axios.get("api/dashboards", { params }).then(transformResponse),
+  recent: params => axios.get("api/dashboards/recent", { params }).then(transformResponse),
+  favorites: params => axios.get("api/dashboards/favorites", { params }).then(transformResponse),
+  favorite: ({ id }) => axios.post(`api/dashboards/${id}/favorite`),
+  unfavorite: ({ id }) => axios.delete(`api/dashboards/${id}/favorite`),
+};
 
-  resource.prototype.canEdit = function canEdit() {
-    return currentUser.canEdit(this) || this.can_edit;
-  };
+_.extend(Dashboard, DashboardService);
 
-  resource.prepareDashboardWidgets = prepareDashboardWidgets;
-  resource.prepareWidgetsForDashboard = prepareWidgetsForDashboard;
-  resource.prototype.getParametersDefs = function getParametersDefs() {
-    const globalParams = {};
-    const queryParams = $location.search();
-    _.each(this.widgets, widget => {
-      if (widget.getQuery()) {
-        const mappings = widget.getParameterMappings();
-        widget
-          .getQuery()
-          .getParametersDefs(false)
-          .forEach(param => {
-            const mapping = mappings[param.name];
-            if (mapping.type === Widget.MappingType.DashboardLevel) {
-              // create global param
-              if (!globalParams[mapping.mapTo]) {
-                globalParams[mapping.mapTo] = param.clone();
-                globalParams[mapping.mapTo].name = mapping.mapTo;
-                globalParams[mapping.mapTo].title = mapping.title || param.title;
-                globalParams[mapping.mapTo].locals = [];
-              }
+Dashboard.prepareDashboardWidgets = prepareDashboardWidgets;
+Dashboard.prepareWidgetsForDashboard = prepareWidgetsForDashboard;
 
-              // add to locals list
-              globalParams[mapping.mapTo].locals.push(param);
+Dashboard.prototype.canEdit = function canEdit() {
+  return currentUser.canEdit(this) || this.can_edit;
+};
+
+Dashboard.prototype.getParametersDefs = function getParametersDefs() {
+  const globalParams = {};
+  const queryParams = location.search;
+  _.each(this.widgets, widget => {
+    if (widget.getQuery()) {
+      const mappings = widget.getParameterMappings();
+      widget
+        .getQuery()
+        .getParametersDefs(false)
+        .forEach(param => {
+          const mapping = mappings[param.name];
+          if (mapping.type === Widget.MappingType.DashboardLevel) {
+            // create global param
+            if (!globalParams[mapping.mapTo]) {
+              globalParams[mapping.mapTo] = cloneParameter(param);
+              globalParams[mapping.mapTo].name = mapping.mapTo;
+              globalParams[mapping.mapTo].title = mapping.title || param.title;
+              globalParams[mapping.mapTo].locals = [];
             }
-          });
-      }
-    });
-    return _.values(
-      _.each(globalParams, param => {
-        param.setValue(param.value); // apply global param value to all locals
-        param.fromUrlParams(queryParams); // try to initialize from url (may do nothing)
-      })
-    );
-  };
 
-  resource.prototype.addWidget = function addWidget(textOrVisualization, options = {}) {
-    const props = {
-      dashboard_id: this.id,
-      options: {
-        ...options,
-        isHidden: false,
-        position: {},
-      },
-      text: "",
-      visualization_id: null,
-      visualization: null,
-    };
-
-    if (_.isString(textOrVisualization)) {
-      props.text = textOrVisualization;
-    } else if (_.isObject(textOrVisualization)) {
-      props.visualization_id = textOrVisualization.id;
-      props.visualization = textOrVisualization;
-    } else {
-      // TODO: Throw an error?
+            // add to locals list
+            globalParams[mapping.mapTo].locals.push(param);
+          }
+        });
     }
+  });
+  return _.values(
+    _.each(globalParams, param => {
+      param.setValue(param.value); // apply global param value to all locals
+      param.fromUrlParams(queryParams); // try to initialize from url (may do nothing)
+    })
+  );
+};
 
-    const widget = new Widget(props);
-
-    const position = calculateNewWidgetPosition(this.widgets, widget);
-    widget.options.position.col = position.col;
-    widget.options.position.row = position.row;
-
-    return widget.save().then(() => {
-      this.widgets = [...this.widgets, widget]; // ANGULAR_REMOVE_ME
-      return widget;
-    });
+Dashboard.prototype.addWidget = function addWidget(textOrVisualization, options = {}) {
+  const props = {
+    dashboard_id: this.id,
+    options: {
+      ...options,
+      isHidden: false,
+      position: {},
+    },
+    text: "",
+    visualization_id: null,
+    visualization: null,
   };
 
-  return resource;
-}
+  if (_.isString(textOrVisualization)) {
+    props.text = textOrVisualization;
+  } else if (_.isObject(textOrVisualization)) {
+    props.visualization_id = textOrVisualization.id;
+    props.visualization = textOrVisualization;
+  } else {
+    // TODO: Throw an error?
+  }
 
-export default function init(ngModule) {
-  ngModule.factory("Dashboard", DashboardService);
+  const widget = new Widget(props);
 
-  ngModule.run($injector => {
-    Dashboard = $injector.get("Dashboard");
+  const position = calculateNewWidgetPosition(this.widgets, widget);
+  widget.options.position.col = position.col;
+  widget.options.position.row = position.row;
+
+  return widget.save().then(() => {
+    this.widgets = [...this.widgets, widget];
+    return widget;
   });
-}
+};
 
-init.init = true;
+Dashboard.prototype.favorite = function favorite() {
+  return Dashboard.favorite(this);
+};
+
+Dashboard.prototype.unfavorite = function unfavorite() {
+  return Dashboard.unfavorite(this);
+};
