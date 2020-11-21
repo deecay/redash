@@ -22,8 +22,8 @@ function prepareSeries(series, options, additionalOptions) {
     type: "heatmap",
     name: "",
     colorscale: colorScheme,
-    xgap: options.heatmapSpacing,
-    ygap: options.heatmapSpacing,
+    xgap: options.heatmapSpacing * 0.2,
+    ygap: options.heatmapSpacing * 0.2,
     zmin: options.rangeZMin,
     zmax: options.rangeZMax,
   };
