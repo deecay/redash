@@ -307,7 +307,7 @@ export default function GeneralSettings({ options, data, onOptionsChange }) {
             <Grid.Row gutter={15} type="flex" align="middle">
               <Grid.Col span={12}>
                 <InputNumber
-                  label="zMin Value"
+                  label="Color Column Min Value"
                   placeholder="Auto"
                   data-test="Chart.RangeZMin"
                   defaultValue={cleanNumber(options.rangeZMin)}
@@ -316,7 +316,7 @@ export default function GeneralSettings({ options, data, onOptionsChange }) {
               </Grid.Col>
               <Grid.Col span={12}>
                 <InputNumber
-                  label="zMax Value"
+                  label="Color Column Max Value"
                   placeholder="Auto"
                   data-test="Chart.RangeZMax"
                   defaultValue={cleanNumber(options.rangeZMax)}
