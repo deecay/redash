@@ -13,6 +13,8 @@ const DEFAULT_OPTIONS = {
       rowTotals: true,
     },
   },
+  pivotMinColor: "#FFFFFF",
+  pivotMaxColor: "#FFFFFF",
 };
 
 export default {

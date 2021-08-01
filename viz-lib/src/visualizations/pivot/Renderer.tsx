@@ -4,6 +4,7 @@ import { get, find, pick, map, mapValues } from "lodash";
 import PivotTableUI from "react-pivottable/PivotTableUI";
 import { RendererPropTypes } from "@/visualizations/prop-types";
 import { formatColumnValue } from "@/lib/utils";
+import { scaleGen } from "./utils";
 
 import "react-pivottable/pivottable.css";
 import "./renderer.less";
@@ -26,6 +27,10 @@ const VALID_OPTIONS = [
   "unusedOrientationCutoff",
   "controls",
   "rendererOptions",
+  "tableColorScaleGenerator",
+  "colorScheme",
+  "pivotMinColor",
+  "pivotMaxColor",
 ];
 
 function formatRows({ rows, columns }: any) {
@@ -57,7 +62,7 @@ export default function Renderer({ data, options, onOptionsChange }: any) {
       data-hide-row-totals={hideRowTotals || null}
       data-hide-column-totals={hideColumnTotals || null}
       data-test="PivotTableVisualization">
-      <PivotTableUI {...pick(config, VALID_OPTIONS)} data={dataRows} onChange={onChange} />
+      <PivotTableUI {...pick(config, VALID_OPTIONS)} data={dataRows} onChange={onChange} tableColorScaleGenerator={scaleGen(options.colorScheme, options)} />
     </div>
   );
 }
