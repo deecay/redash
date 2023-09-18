@@ -27,10 +27,13 @@ function prepareXAxis(axisOptions: any, additionalOptions: any) {
   if (additionalOptions.sortX && axis.type === "category") {
     if (additionalOptions.reverseX) {
       // @ts-expect-error ts-migrate(2339) FIXME: Property 'categoryorder' does not exist on type '{... Remove this comment to see the full error message
-      axis.categoryorder = "category descending";
+      axis.categoryorder = axisOptions.sortKind + " descending";
     } else {
       // @ts-expect-error ts-migrate(2339) FIXME: Property 'categoryorder' does not exist on type '{... Remove this comment to see the full error message
-      axis.categoryorder = "category ascending";
+      axis.categoryorder = axisOptions.sortKind + " ascending";
+    }
+    if (axisOptions.sortKind === "array" && axisOptions.customSortArray) {
+      axis.categoryarray = axisOptions.customSortArray.split(/,[ ]*/);
     }
   }
 
