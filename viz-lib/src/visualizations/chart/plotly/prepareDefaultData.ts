@@ -68,6 +68,7 @@ function prepareBoxSeries(series: any, options: any, { seriesColor }: any) {
     series.jitter = 0.3;
     series.pointpos = -1.8;
   }
+  series.quartilemethod = options.boxQuartilemethod;
   return series;
 }
 

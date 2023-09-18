@@ -275,15 +275,42 @@ export default function GeneralSettings({ options, data, onOptionsChange }: any)
       )}
 
       {includes(["box"], options.globalSeriesType) && (
-        // @ts-expect-error ts-migrate(2745) FIXME: This JSX tag's 'children' prop expects type 'never... Remove this comment to see the full error message
-        <Section>
-          <Checkbox
-            data-test="Chart.ShowPoints"
-            defaultChecked={options.showpoints}
-            onChange={event => onOptionsChange({ showpoints: event.target.checked })}>
-            Show All Points
-          </Checkbox>
-        </Section>
+        <React.Fragment>
+          {/* @ts-expect-error ts-migrate(2745) FIXME: This JSX tag's 'children' prop expects type 'never... Remove this comment to see the full error message */}
+          <Section>
+            <Checkbox
+              data-test="Chart.ShowPoints"
+              defaultChecked={options.showpoints}
+              onChange={event => onOptionsChange({ showpoints: event.target.checked })}>
+              Show All Points
+            </Checkbox>
+          </Section>
+
+          {/* @ts-expect-error ts-migrate(2745) FIXME: This JSX tag's 'children' prop expects type 'never... Remove this comment to see the full error message */}
+          <Section>
+            <Select
+              label="Quartile Computing Method"
+              data-test="Chart.BoxQuartilemethod"
+              defaultValue={"Linear"}
+              onChange={(event: any) => onOptionsChange({ boxQuartilemethod: event })}>
+              {/* @ts-expect-error ts-migrate(2339) FIXME: Property 'Option' does not exist on type '({ class... Remove this comment to see the full error message */}
+              <Select.Option value="linear" data-test="Chart.BoxQuartilemethod.Linear">
+                Linear
+                {/* @ts-expect-error ts-migrate(2339) FIXME: Property 'Option' does not exist on type '({ class... Remove this comment to see the full error message */}
+              </Select.Option>
+              {/* @ts-expect-error ts-migrate(2339) FIXME: Property 'Option' does not exist on type '({ class... Remove this comment to see the full error message */}
+              <Select.Option value="exclusive" data-test="Chart.BoxQuartilemethod.Exclusive">
+                Exclusive
+                {/* @ts-expect-error ts-migrate(2339) FIXME: Property 'Option' does not exist on type '({ class... Remove this comment to see the full error message */}
+              </Select.Option>
+              {/* @ts-expect-error ts-migrate(2339) FIXME: Property 'Option' does not exist on type '({ class... Remove this comment to see the full error message */}
+              <Select.Option value="inclusive" data-test="Chart.BoxQuartilemethod.Inclusive">
+                Inclusive
+                {/* @ts-expect-error ts-migrate(2339) FIXME: Property 'Option' does not exist on type '({ class... Remove this comment to see the full error message */}
+              </Select.Option>
+            </Select>
+          </Section>
+        </React.Fragment>
       )}
 
       {!includes(["custom", "heatmap"], options.globalSeriesType) && (
