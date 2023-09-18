@@ -6,7 +6,7 @@ import { EditorPropTypes } from "@/visualizations/prop-types";
 
 export default function DataLabelsSettings({ options, onOptionsChange }: any) {
   const isShowDataLabelsAvailable = includes(
-    ["line", "area", "column", "scatter", "pie", "heatmap"],
+    ["line", "area", "column", "scatter", "pie", "heatmap", "radar"],
     options.globalSeriesType
   );
 

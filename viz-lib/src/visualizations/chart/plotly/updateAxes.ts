@@ -65,7 +65,7 @@ export default function updateAxes(plotlyElement: any, seriesList: any, layout: 
       // Update Y Ranges
       if (isObject(layout.yaxis)) {
         const axisOptions = options.yAxis[0];
-        const defaultRange = plotlyElement.layout.yaxis.range;
+        const defaultRange = plotlyElement.layout.yaxis.range || plotlyElement.layout.polar.radialaxis.range;
         // @ts-expect-error ts-migrate(2339) FIXME: Property 'yaxis' does not exist on type '{}'.
         updates.yaxis.autorange = false;
         // @ts-expect-error ts-migrate(2339) FIXME: Property 'yaxis' does not exist on type '{}'.

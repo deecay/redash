@@ -1,5 +1,6 @@
 import { isObject, isUndefined, filter, map } from "lodash";
 import { getPieDimensions } from "./preparePieData";
+import { getRadarDimensions } from "./prepareRadarData";
 
 function getAxisTitle(axis: any) {
   return isObject(axis.title) ? axis.title.text : null;
@@ -108,6 +109,62 @@ function prepareBoxLayout(layout: any, options: any, data: any) {
   return layout;
 }
 
+function prepareRadarLayout(layout: any, options: any, data: any) {
+  const { cellsInRow, cellWidth, cellHeight, xPadding, yPadding } = getRadarDimensions(data);
+  const additionalPadding = 0.04;
+
+  layout = prepareDefaultLayout(layout, options, data);
+  layout.margin.b = 20;
+
+  data.forEach((series: any, index: any) => {
+    const xPosition = (index % cellsInRow) * cellWidth;
+    const yPosition = Math.floor(index / cellsInRow) * cellHeight;
+    // plotly assumes first layout to be "polar", not "polar1"
+    const key = index == 0 ? "" : index + 1;
+    layout["polar" + key] = {
+      radialaxis: {
+        range: [options.yAxis[0].rangeMin, options.yAxis[0].rangeMax],
+        type: options.yAxis[0].type,
+        showline: false,
+        showgrid: false,
+        showticklabels: false,
+        ticks: "",
+      },
+      angularaxis: {
+        // rotation: 90,
+        categoryorder: layout.xaxis.categoryorder,
+        ticks: options.xAxis.labels.enabled ? undefined : "",
+        showticklabels: options.xAxis.labels.enabled,
+      },
+      domain: {
+        x: [xPosition + additionalPadding, xPosition + cellWidth - xPadding - additionalPadding],
+        y: [yPosition + additionalPadding, yPosition + cellHeight - yPadding - additionalPadding],
+      },
+    };
+  });
+
+  layout.yaxis = prepareYAxis(options.yAxis[0]);
+
+  layout.annotations = filter(
+    map(data, (series, index) => {
+      // @ts-expect-error ts-migrate(2362) FIXME: The left-hand side of an arithmetic operation must... Remove this comment to see the full error message
+      const xPosition = (index % cellsInRow) * cellWidth;
+      // @ts-expect-error ts-migrate(2362) FIXME: The left-hand side of an arithmetic operation must... Remove this comment to see the full error message
+      const yPosition = Math.floor(index / cellsInRow) * cellHeight;
+      return {
+        x: xPosition + (cellWidth - xPadding) / 2,
+        y: yPosition + cellHeight - 0.04,
+        xanchor: "center",
+        yanchor: "top",
+        text: "<b>" + series.name + "</b>",
+        showarrow: false,
+      };
+    })
+  );
+
+  return layout;
+}
+
 export default function prepareLayout(element: any, options: any, data: any) {
   const layout = {
     margin: { l: 10, r: 10, b: 5, t: 20, pad: 4 },
@@ -129,6 +186,8 @@ export default function prepareLayout(element: any, options: any, data: any) {
       return preparePieLayout(layout, options, data);
     case "box":
       return prepareBoxLayout(layout, options, data);
+    case "radar":
+      return prepareRadarLayout(layout, options, data);
     default:
       return prepareDefaultLayout(layout, options, data);
   }

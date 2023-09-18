@@ -119,7 +119,7 @@ function updatePercentValues(seriesList: any, options: any) {
           item.yPercent = null;
         } else {
           const sum = sumOfCorrespondingPoints.get(item.x);
-          item.yPercent = (item.y / sum);
+          item.yPercent = item.y / sum;
         }
         yValues.push(item.yPercent);
       });
@@ -219,6 +219,9 @@ export default function updateData(seriesList: any, options: any) {
   if (visibleSeriesList.length > 0) {
     switch (options.globalSeriesType) {
       case "pie":
+        updatePieData(visibleSeriesList, options);
+        break;
+      case "radar":
         updatePieData(visibleSeriesList, options);
         break;
       case "line":

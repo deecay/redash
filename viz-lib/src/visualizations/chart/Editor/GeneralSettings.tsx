@@ -23,7 +23,7 @@ function getAvailableColumnMappingTypes(options: any) {
     result.push("zVal");
   }
 
-  if (!includes(["custom", "bubble", "heatmap"], options.globalSeriesType)) {
+  if (!includes(["custom", "bubble", "heatmap", "radar"], options.globalSeriesType)) {
     result.push("yError");
   }
 
@@ -286,7 +286,7 @@ export default function GeneralSettings({ options, data, onOptionsChange }: any)
         </Section>
       )}
 
-      {!includes(["custom", "heatmap"], options.globalSeriesType) && (
+      {!includes(["custom", "heatmap", "radar"], options.globalSeriesType) && (
         // @ts-expect-error ts-migrate(2745) FIXME: This JSX tag's 'children' prop expects type 'never... Remove this comment to see the full error message
         <Section>
           <Select
