@@ -48,6 +48,15 @@ export const TYPES = mapValues(
     DASHBOARDS: ["/user-guide/dashboards", "Guide: Dashboards"],
     QUERIES: ["/user-guide/querying", "Guide: Queries"],
     ALERTS: ["/user-guide/alerts", "Guide: Alerts"],
+    QUERY_EXCEL: ["/data-sources/querying/csv-excel-files", "Guide: Excel Query"],
+    QUERY_CSV: ["/data-sources/querying/csv-excel-files", "Guide: CSV Query"],
+    QUERY_GOOGLE_SPREADSHEETS: ["/data-sources/querying/google-sheets#Querying", "Guide: Google Spreadsheet Query"],
+    QUERY_ELASTICSEARCH: ["/data-sources/querying/elasticsearch", "Guide: Elasticsearch Query"],
+    QUERY_GOOGLE_ANALYTICS4: ["/data-sources/querying/google-analytics", "Guide: Google Analytics Query"],
+    QUERY_JIRA: ["/data-sources/querying/jira-ds", "Guide: JIRA Query"],
+    QUERY_JSON: ["/data-sources/querying/json-api#Usage", "Guide: JSON Query"],
+    QUERY_MONGODB: ["/data-sources/querying/mongodb#Querying", "Guide: MongoDB Query"],
+    QUERY_PYTHON: ["/data-sources/querying/python#Writing-Queries", "Guide: Python Query"],
   },
   ([url, title]) => [DOMAIN + HELP_PATH + url, title]
 );

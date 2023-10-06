@@ -34,6 +34,7 @@ ButtonTooltip.defaultProps = {
 };
 
 export default function EditorControl({
+  dataSourceProps,
   addParameterButtonProps,
   formatButtonProps,
   saveButtonProps,
@@ -85,6 +86,16 @@ export default function EditorControl({
           enabled={autocompleteToggleProps.enabled}
           onToggle={autocompleteToggleProps.onToggle}
         />
+      )}
+      {dataSourceProps.datasourceName !== false && (
+        <ButtonTooltip title={dataSourceProps.datasourceName && dataSourceProps.datasourceName[1]}>
+          <Button
+            className="query-editor-controls-button m-r-5"
+            disabled={!dataSourceProps.datasourceName}
+            onClick={event =>  window.open(dataSourceProps.datasourceName[0], "_blank")}>
+            <i className="fa fa-question-circle" aria-hidden="true" />
+          </Button>
+        </ButtonTooltip>
       )}
       {autoLimitCheckboxProps !== false && <AutoLimitCheckbox {...autoLimitCheckboxProps} />}
       {dataSourceSelectorProps === false && <span className="query-editor-controls-spacer" />}
@@ -144,6 +155,7 @@ const ButtonPropsPropType = PropTypes.oneOfType([
 ]);
 
 EditorControl.propTypes = {
+  dataSourceProps: ButtonPropsPropType,
   addParameterButtonProps: ButtonPropsPropType,
   formatButtonProps: ButtonPropsPropType,
   saveButtonProps: ButtonPropsPropType,
@@ -177,6 +189,7 @@ EditorControl.propTypes = {
 };
 
 EditorControl.defaultProps = {
+  dataSourceProps: false,
   addParameterButtonProps: false,
   formatButtonProps: false,
   saveButtonProps: false,

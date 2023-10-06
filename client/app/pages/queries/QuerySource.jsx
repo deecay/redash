@@ -24,6 +24,8 @@ import QuerySourceAlerts from "./components/QuerySourceAlerts";
 import wrapQueryPage from "./components/wrapQueryPage";
 import QueryExecutionMetadata from "./components/QueryExecutionMetadata";
 
+import { TYPES as HELP_TRIGGER_TYPES } from "@/components/HelpTrigger";
+
 import { getEditorComponents } from "@/components/queries/editor-components";
 import useQuery from "./hooks/useQuery";
 import useVisualizationTabHandler from "./hooks/useVisualizationTabHandler";
@@ -269,6 +271,11 @@ function QuerySource(props) {
                     />
 
                     <QueryEditor.Controls
+                      dataSourceProps={{
+                        datasourceName: dataSource
+                        ? HELP_TRIGGER_TYPES["QUERY_" + dataSource.type.toUpperCase()]
+                        : false,
+                      }}
                       addParameterButtonProps={{
                         title: "Add New Parameter",
                         shortcut: "mod+p",
